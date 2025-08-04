@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\HasLifecycleCallbacks] //Active les PrePersist/PreUpdate
 class Task
 {
     #[ORM\Id]
@@ -23,12 +24,15 @@ class Task
     #[ORM\Column(length: 50)]
     private ?string $statut = null;
 
+    
     #[ORM\Column(type: "string", length: 20)]
+    //validateur symfony qui teste si la valeur de statut est dans STATUSES et renvoit message si ce n'est pas le cas
     #[Assert\Choice(choices: Task::STATUSES, message: "Choisissez un statut valide.")]
     private string $status;
     public const STATUSES = ['hors programme', 'en cours', 'terminé'];
 
-    
+    //utilisation de la classe Timestampable pour avoir les champs creat_at et updat_at
+    //qui permettent de connaitre les moments de créations et de modifications
     use Timestampable;
 
 
