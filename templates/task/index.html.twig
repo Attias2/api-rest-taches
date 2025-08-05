@@ -1,20 +1,62 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello TaskController!{% endblock %}
+{% block title %}Index Task{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<table class="styled-table">
+        <caption>Employee Information</caption>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Statut</th>
+                <th>View</th>
+                <th>Delete</th>
+                <th>Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>01</td>
+                <td>John Smith</td>
+                <td>Marketing</td>
+                <td>$75,000</td>
+                <td>2020-05-15</td>
+            </tr>
+            <tr>
+                <td>02</td>
+                <td>Sarah Johnson</td>
+                <td>Engineering</td>
+                <td>$85,000</td>
+                <td>2019-08-22</td>
+            </tr>
+            <tr>
+                <td>03</td>
+                <td>Michael Brown</td>
+                <td>HR</td>
+                <td>$65,000</td>
+                <td>2021-01-10</td>
+            </tr>
+            <tr>
+                <td>04</td>
+                <td>Emily Davis</td>
+                <td>Finance</td>
+                <td>$78,000</td>
+                <td>2020-11-05</td>
+            </tr>
+            <tr>
+                <td>05</td>
+                <td>Robert Wilson</td>
+                <td>Engineering</td>
+                <td>$92,000</td>
+                <td>2018-03-18</td>
+            </tr>
+        </tbody>
+    </table>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/wamp64/www/api-rest-taches/src/Controller/TaskController.php'|file_link(0) }}">src/Controller/TaskController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/wamp64/www/api-rest-taches/templates/task/index.html.twig'|file_link(0) }}">templates/task/index.html.twig</a></code></li>
-    </ul>
-</div>
 {% endblock %}
