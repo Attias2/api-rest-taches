@@ -21,9 +21,6 @@ class Task
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $statut = null;
-
     
     #[ORM\Column(type: "string", length: 20)]
     //validateur symfony qui teste si la valeur de statut est dans STATUSES et renvoit message si ce n'est pas le cas
@@ -65,14 +62,14 @@ class Task
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatus(): ?string
     {
-        return $this->statut;
+        return $this->status;
     }
 
-    public function setStatut(string $statut): static
+    public function setStatus(string $status): static
     {
-        $this->statut = $statut;
+        $this->status = $status;
 
         return $this;
     }

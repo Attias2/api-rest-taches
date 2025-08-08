@@ -42,11 +42,11 @@ body {
     background-color: #f3f3f3;
 }
         
-.styled-table tbody tr:last-of-type {
+/* .styled-table tbody tr:last-of-type {
     border-bottom: 2px solid #009879;
-}
+} */
         
-.styled-table tbody tr:hover {
+.styled-table tbody tr:hover:not(#add) {
     background-color: #e0f7fa;
     color: #009879;
     font-weight: bold;
@@ -58,4 +58,17 @@ body {
     margin-bottom: 10px;
     font-weight: bold;
     color: #333;
+}
+
+.btn-add {
+    background-color: #009879;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-add:hover {
+    background-color: #007f63;
 }

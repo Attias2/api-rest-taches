@@ -8,55 +8,52 @@
 
 {% block body %}
 
-<table class="styled-table">
-        <caption>Employee Information</caption>
+<div>
+    <table class="styled-table">
+        <caption>Tasks</caption>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Titre</th>
-                <th>Statut</th>
+                <th>Status</th>
+                <th>Begin At</th>
+                <th>Treat At</th>
                 <th>View</th>
                 <th>Delete</th>
                 <th>Update</th>
+                
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>01</td>
-                <td>John Smith</td>
-                <td>Marketing</td>
-                <td>$75,000</td>
-                <td>2020-05-15</td>
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.getId()}}</td>
+                    <td>{{ task.getTitle()}}</td>
+                    <td>{{ task.getStatus()}}</td>
+                    <td>{{ task.getCreatedAt().format('d/m/Y H:i')}}</td>
+                    <td>{{ task.getUpdatedAt().format('d/m/Y H:i')}}</td>
+                    <td>View</td>
+                    <td>Delete</td>
+                    <td>Update</td>
+                </tr>
+            {% endfor %}
+            
+            <tr id="add">
+                <td colspan="12">{{ form(form) }}</td>
             </tr>
-            <tr>
-                <td>02</td>
-                <td>Sarah Johnson</td>
-                <td>Engineering</td>
-                <td>$85,000</td>
-                <td>2019-08-22</td>
-            </tr>
-            <tr>
-                <td>03</td>
-                <td>Michael Brown</td>
-                <td>HR</td>
-                <td>$65,000</td>
-                <td>2021-01-10</td>
-            </tr>
-            <tr>
-                <td>04</td>
-                <td>Emily Davis</td>
-                <td>Finance</td>
-                <td>$78,000</td>
-                <td>2020-11-05</td>
-            </tr>
-            <tr>
-                <td>05</td>
-                <td>Robert Wilson</td>
-                <td>Engineering</td>
-                <td>$92,000</td>
-                <td>2018-03-18</td>
-            </tr>
+
         </tbody>
+
+        <tfoot>
+            <tr>
+                <td colspan="6">
+                    <button class="btn-add">Ajouter</button>
+                </td>
+            </tr>
+        </tfoot>
     </table>
+
+</div>
+
 
 {% endblock %}
