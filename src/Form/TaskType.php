@@ -17,7 +17,7 @@ class TaskType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'required' => true,//rend la sisie obligatoire
+                'required' => true,//rend la saisie obligatoire
             ])
             ->add('description', TextType::class, [
                 'required' => true,
@@ -27,7 +27,7 @@ class TaskType extends AbstractType
                 'data' => 'en cours', //valeur par défaut
                 'required' => true,
             ])
-            ->add('save', SubmitType::class)
+            ->add('Ajouter', SubmitType::class)
         ;
     }
 

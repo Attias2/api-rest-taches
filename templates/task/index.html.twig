@@ -4,6 +4,8 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <script type="text/javascript" src="{{ asset('js/effectTable.js') }}"></script>
+    
 {% endblock %}
 
 {% block body %}
@@ -16,43 +18,62 @@
                 <th>ID</th>
                 <th>Titre</th>
                 <th>Status</th>
+                <th>Description</th>
                 <th>Begin At</th>
                 <th>Treat At</th>
-                <th>View</th>
                 <th>Delete</th>
                 <th>Update</th>
-                
             </tr>
         </thead>
         <tbody>
             {% for task in tasks %}
                 <tr>
-                    <td>{{ task.getId()}}</td>
-                    <td>{{ task.getTitle()}}</td>
-                    <td>{{ task.getStatus()}}</td>
-                    <td>{{ task.getCreatedAt().format('d/m/Y H:i')}}</td>
-                    <td>{{ task.getUpdatedAt().format('d/m/Y H:i')}}</td>
-                    <td>View</td>
+                    <td>{{ task.getId() }}</td>
+                    <td>{{ task.getTitle() }}</td>
+                    <td>{{ task.getStatus() }}</td>{# updateStatus #}
+                    <td>
+                        <p>{{ task.getDescription() }}</p>
+                    </td>
+                    <td>{{ task.getCreatedAt().format('d/m/Y H:i') }}</td>
+                    <td>{{ task.getUpdatedAt().format('d/m/Y H:i') }}</td>
                     <td>Delete</td>
                     <td>Update</td>
-                </tr>
+                 
             {% endfor %}
             
-            <tr id="add">
-                <td colspan="12">{{ form(form) }}</td>
-            </tr>
+            
 
         </tbody>
 
         <tfoot>
-            <tr>
-                <td colspan="6">
-                    <button class="btn-add">Ajouter</button>
+         <tr id="add">
+                {{ form_start(form) }}
+
+                        <td class="" colspan="2">
+                            {{ form_row(form.title) }}
+                        </td>
+                       <td class="">
+                            {{ form_row(form.status) }}
+                        </td>
+                        <td class="">
+                            {{ form_row(form.description) }}
+                        </td>
+
+                        <td class="">
+                            {{ form_row(form.Ajouter, {'attr': {'class': 'btn-add'}}) }}
+                        </td>
+
+                    
                 </td>
+                {{ form_end(form) }}
             </tr>
         </tfoot>
     </table>
+    
 
+    <div id='result'>
+        
+    </div>
 </div>
 
 

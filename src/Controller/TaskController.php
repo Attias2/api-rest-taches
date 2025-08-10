@@ -6,6 +6,7 @@ use App\Entity\Task;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,7 +24,7 @@ class TaskController extends AbstractController
 
     //route construisant la page principale
     #[Route('/task', name: 'app_task')]
-    public function index(Request $request,EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
 
         //création du formulaire d'ajout
@@ -48,5 +49,26 @@ class TaskController extends AbstractController
             'form' => $form->createView(),
             'tasks' => $tasks,
         ]);
+    }
+
+    #[Route('/update/status/{id}', name: '/update_Status', methods: ['POST'])]
+    public function viewTask(Request $request, EntityManagerInterface $em): JsonResponse|Response
+    {
+        if($request->isXmlHttpRequest()) {
+            $data = json_decode($request->getContent(), true);
+            $message = 'Tâche non enregistée';
+            if (isset($data['id'])) {
+                $task = $em->getRepository(Task::class)->findOneBy(
+                    ['id' => $data['id']],
+                );
+                
+                return new JsonResponse([ 'task' => $task]);
+            }
+            else{
+                return new JsonResponse(['message' => $message]);
+            }
+            
+        }
+        return new JsonResponse(['error' => 'Cet appel doit être effectué via AJAX.'], Response::HTTP_BAD_REQUEST);
     }
 }
