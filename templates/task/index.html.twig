@@ -37,7 +37,9 @@
                     <td>{{ task.getCreatedAt().format('d/m/Y H:i') }}</td>
                     <td>{{ task.getUpdatedAt().format('d/m/Y H:i') }}</td>
                     <td>Delete</td>
-                    <td>Update</td>
+                    <td>
+                        <a href="{{ path('update_task', { id: task.getId() }) }}">Update</a>
+                    </td>
                  
             {% endfor %}
             
@@ -46,33 +48,37 @@
         </tbody>
 
         <tfoot>
-         <tr id="add">
-                {{ form_start(form) }}
+            <tr id="add">
+                    {{ form_start(form) }}
 
-                        <td class="" colspan="2">
-                            {{ form_row(form.title) }}
-                        </td>
-                       <td class="">
-                            {{ form_row(form.status) }}
-                        </td>
-                        <td class="">
-                            {{ form_row(form.description) }}
-                        </td>
+                            <td class="" colspan="2">
+                                {{ form_row(form.title) }}
+                            </td>
+                            <td class="">
+                                {{ form_row(form.status) }}
+                            </td>
+                            <td class="">
+                                {{ form_row(form.description) }}
+                            </td>
 
-                        <td class="">
-                            {{ form_row(form.Ajouter, {'attr': {'class': 'btn-add'}}) }}
-                        </td>
+                            <td class="">
+                                {{ form_row(form.Ajouter, {'attr': {'class': 'btn-add'}}) }}
+                            </td>
 
-                    
-                </td>
-                {{ form_end(form) }}
+                        
+                    {{ form_end(form) }}
             </tr>
         </tfoot>
     </table>
     
 
     <div id='result'>
-        
+        {# teste si un message d'erreur est à afficher #}
+        {% if  app.flashes('error') is defined %}
+            {% for message in app.flashes('error') %}
+                <p style="color:red;">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
     </div>
 </div>
 

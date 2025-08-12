@@ -22,11 +22,10 @@ class TaskController extends AbstractController
         return $this->redirectToRoute('app_task');
     }
 
-    //route construisant la page principale
+    //Route pour la page principale
     #[Route('/task', name: 'app_task')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
-
         //création du formulaire d'ajout
         $task = new Task();
         $form = $this->createForm(TaskType::class, $task);
@@ -51,24 +50,36 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/update/status/{id}', name: '/update_Status', methods: ['POST'])]
-    public function viewTask(Request $request, EntityManagerInterface $em): JsonResponse|Response
+    /**
+     * Modification de la tâche
+     */
+    #[Route('/update/task/{id}', name: 'update_task')]//Récupération de l'id dans la route
+    public function updateTask(Request $request, EntityManagerInterface $em, int $id = null): Response
     {
-        if($request->isXmlHttpRequest()) {
-            $data = json_decode($request->getContent(), true);
-            $message = 'Tâche non enregistée';
-            if (isset($data['id'])) {
-                $task = $em->getRepository(Task::class)->findOneBy(
-                    ['id' => $data['id']],
-                );
-                
-                return new JsonResponse([ 'task' => $task]);
-            }
-            else{
-                return new JsonResponse(['message' => $message]);
-            }
-            
+        //récupération de la tâche
+        $task = $em->getRepository(Task::class)->find($id);
+        //teste si la tâche existe, si non on retourne sur la route
+        if($task === null){
+            $this->addFlash('error', 'Aucune tâche trouvée !');
+            return $this->redirectToRoute('app_task');
         }
-        return new JsonResponse(['error' => 'Cet appel doit être effectué via AJAX.'], Response::HTTP_BAD_REQUEST);
+        
+        $form = $this->createForm(TaskType::class, $task);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            
+            $task = $form->getData();
+            $em->persist($task);
+            $em->flush();
+
+            return $this->redirectToRoute('update_task', ['id' => $task->getId()]);
+        }
+
+        return $this->render('task/updateTask.html.twig', [
+            'form' => $form->createView(),
+            'task' => $task,
+        ]);
+
     }
 }

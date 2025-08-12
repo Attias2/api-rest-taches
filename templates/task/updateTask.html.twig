@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Update Task{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+{% endblock %}
+
+{% block body %}
+
+
+<table class="styled-table">
+        <caption>Tasks</caption>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Status</th>
+                <th>Description</th>
+                <th>Begin At</th>
+                <th>Treat At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="">
+                    {{ task.getId()}}
+                </td>
+                {{ form_start(form) }}
+
+                    <td class="">
+                        {{ form_row(form.title) }}
+                    </td>
+                    <td class="">
+                        {{ form_row(form.status) }}
+                    </td>
+                    <td class="">
+                        {{ form_row(form.description) }}
+                    </td>
+                
+                    <td>{{ task.getCreatedAt().format('d/m/Y H:i') }}</td>
+
+                    <td>{{ task.getUpdatedAt().format('d/m/Y H:i') }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="">
+            {{ form_row(form.Ajouter, {'label': 'Modifier', 'attr': {'class': 'btn-add'}}) }}
+        </div>
+        {{ form_end(form) }}
+
+
+
+
+
+
+{% endblock %}
