@@ -4,7 +4,8 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-    <script type="text/javascript" src="{{ asset('js/effectTable.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/deleteTask.js') }}"></script>
+
     
 {% endblock %}
 
@@ -36,7 +37,9 @@
                     </td>
                     <td>{{ task.getCreatedAt().format('d/m/Y H:i') }}</td>
                     <td>{{ task.getUpdatedAt().format('d/m/Y H:i') }}</td>
-                    <td>Delete</td>
+                    <td>
+                        <a href="{{ path('delete_task', { id: task.getId() }) }}">Delete</a>
+                    </td>
                     <td>
                         <a href="{{ path('update_task', { id: task.getId() }) }}">Update</a>
                     </td>
@@ -78,6 +81,45 @@
             {% for message in app.flashes('error') %}
                 <p style="color:red;">{{ message }}</p>
             {% endfor %}
+        {% endif %}
+
+
+        {% if  app.flashes('success') is defined %}
+            {% for message in app.flashes('success') %}
+                <p style="color:green;">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        {% if  taskA is defined and taskA is not null %}
+            <table class="styled-table">
+                <caption>Tâche {{ taskA.getTitle() }} ajoutée</caption>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Begin At</th>
+                        <th>Treat At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ taskA.getId() }}</td>
+                        <td>{{ taskA.getTitle() }}</td>
+                        <td>{{ taskA.getStatus() }}</td>
+                        <td>
+                            <p>{{ taskA.getDescription() }}</p>
+                        </td>
+                        <td>{{ taskA.getCreatedAt().format('d/m/Y H:i') }}</td>
+                        <td>{{ taskA.getUpdatedAt().format('d/m/Y H:i') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
+
+        {% if  message is defined %}
+            <p style="color:red;">{{ message }}</p>
         {% endif %}
     </div>
 </div>

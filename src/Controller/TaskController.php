@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Form\TaskType;
 
@@ -21,65 +22,127 @@ class TaskController extends AbstractController
     {
         return $this->redirectToRoute('app_task');
     }
-
-    //Route pour la page principale
+    
     #[Route('/task', name: 'app_task')]
-    public function index(Request $request, EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em, SessionInterface $session): Response
     {
-        //création du formulaire d'ajout
+        // création du formulaire d'ajout
         $task = new Task();
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
 
-        //teste si le formulaire est soumis
+        //Teste si le formulaire est soumis et valide
         if ($form->isSubmitted() && $form->isValid()) {
-            
             $task = $form->getData();
             $em->persist($task);
             $em->flush();
 
+            //Stocke l'id de la tâche créée en session
+            $session->set('lastCreatedTaskId', $task->getId());
+
+            //Redirection
             return $this->redirectToRoute('app_task');
         }
 
-        //recupératuion des tâches
+        // Récupère la tâche créée depuis la session
+        $taskAEntity = null;
+        $lastCreatedTaskId = $session->get('lastCreatedTaskId');
+        if ($lastCreatedTaskId) {
+            $taskAEntity = $em->getRepository(Task::class)->find($lastCreatedTaskId);
+            // Supprime la clé en session pour que ça n'apparaisse plus au prochain chargement
+            $session->remove('lastCreatedTaskId');
+        }
+
         $tasks = $em->getRepository(Task::class)->findAll();
 
         return $this->render('task/index.html.twig', [
             'form' => $form->createView(),
             'tasks' => $tasks,
+            'taskA' => $taskAEntity,
         ]);
     }
 
-    /**
-     * Modification de la tâche
-     */
-    #[Route('/update/task/{id}', name: 'update_task')]//Récupération de l'id dans la route
-    public function updateTask(Request $request, EntityManagerInterface $em, int $id = null): Response
+    /** 
+     *modification de tâche 
+     * 
+    */
+    #[Route('/update/task/{id}', name: 'update_task')]
+    public function updateTask(Request $request, EntityManagerInterface $em, int $id = null, SessionInterface $session): Response
     {
         //récupération de la tâche
         $task = $em->getRepository(Task::class)->find($id);
-        //teste si la tâche existe, si non on retourne sur la route
-        if($task === null){
+
+        //Teste si la tâche existe
+        if ($task === null) {
             $this->addFlash('error', 'Aucune tâche trouvée !');
             return $this->redirectToRoute('app_task');
         }
-        
+
+        // Stockage dees anciennes valeurs dans un tableau avant modification
+        $oldTaskData = [
+            'title' => $task->getTitle(),
+            'status' => $task->getStatus(),
+            'description' => $task->getDescription()
+        ];
+
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            
-            $task = $form->getData();
             $em->persist($task);
             $em->flush();
+            
+            //Stocke un booleen qui sert à tester si une modification est faite
+            $session->set('isModified', true);
+
+            // Stockage aussi des anciennes valeurs en session pour les récupérer après la redirection
+            $session->set('oldTaskData', $oldTaskData);
 
             return $this->redirectToRoute('update_task', ['id' => $task->getId()]);
+        }
+
+        // Récupère du booléen qui teste si il y a eu une modification
+        $isModified = $session->get('isModified', false);
+        if ($isModified) {
+            $session->remove('isModified');
+        }
+
+        // Récupératrion des anciennes valeurs en session, puis supprettion de la clé
+        $oldTaskData = $session->get('oldTaskData', null);
+        if ($oldTaskData) {
+            $session->remove('oldTaskData');
         }
 
         return $this->render('task/updateTask.html.twig', [
             'form' => $form->createView(),
             'task' => $task,
+            'oldTaskData' => $oldTaskData,
+            'isModified' => $isModified,
         ]);
+    }
+
+
+
+
+     /**
+     * Supression de la tâche
+     */
+    #[Route('/delete/task/{id}', name: 'delete_task')]//Récupération de l'id dans la route
+    public function deleteTask(Request $request, EntityManagerInterface $em, int $id = null): Response
+    {
+        //récupération de la tâche
+        $task = $em->getRepository(Task::class)->find($id);
+
+        //teste si la tâche existe, si non on retourne sur la route
+        if($task === null){
+            $this->addFlash('error', 'Aucune tâche trouvée !');
+            return $this->redirectToRoute('app_task');
+        }
+        $title = $task->getTitle();
+        $em->remove($task);
+        $em->flush();
+        $this->addFlash('success', "Tâche $title supprimée !");
+        return $this->redirectToRoute('app_task');
 
     }
 }

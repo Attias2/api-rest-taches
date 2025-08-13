@@ -1,5 +1,5 @@
 
-
+Swal.fire('Hello !', 'Ça marche 🎉', 'success');
 function updateStatus(id) {
         try {
         

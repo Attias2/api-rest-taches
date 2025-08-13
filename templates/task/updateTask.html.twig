@@ -4,13 +4,16 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/lien.css') }}">
 {% endblock %}
 
 {% block body %}
 
 
+<a href="{{ path('app_task') }}" class="previous">&laquo; Liste des Tâches</a>
+
 <table class="styled-table">
-        <caption>Tasks</caption>
+        <caption>Tasks : {{ task.getTitle()}}</caption>
         <thead>
             <tr>
                 <th>ID</th>
@@ -23,18 +26,18 @@
         </thead>
         <tbody>
             <tr>
-                <td class="">
+                <td>
                     {{ task.getId()}}
                 </td>
                 {{ form_start(form) }}
 
-                    <td class="">
+                    <td>
                         {{ form_row(form.title) }}
                     </td>
-                    <td class="">
+                    <td>
                         {{ form_row(form.status) }}
                     </td>
-                    <td class="">
+                    <td>
                         {{ form_row(form.description) }}
                     </td>
                 
@@ -45,12 +48,39 @@
             </tbody>
         </table>
 
-        <div class="">
+        <div >
             {{ form_row(form.Ajouter, {'label': 'Modifier', 'attr': {'class': 'btn-add'}}) }}
         </div>
         {{ form_end(form) }}
 
 
+       {% if oldTaskData is defined and oldTaskData is not null %}
+            <table class="styled-table">
+                <caption>Bilan des modifications</caption>
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Titre</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ancienne version</td>
+                        <td>{{ oldTaskData.title }}</td>
+                        <td>{{ oldTaskData.status }}</td>
+                        <td><p>{{ oldTaskData.description }}</p></td>
+                    </tr>
+                    <tr>
+                        <td>Nouvelle version</td>
+                        <td>{{ task.getTitle() }}</td>
+                        <td>{{ task.getStatus() }}</td>
+                        <td><p>{{ task.getDescription() }}</p></td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
 
 
 
