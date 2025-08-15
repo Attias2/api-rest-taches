@@ -160,19 +160,27 @@ class TaskController extends AbstractController
             //récupération de la tâche
             $task = $em->getRepository(Task::class)->find($data['id']);
 
+            $status = $data['status'];
+
             //teste si la tâche existe, si on renvoit un message d'erreur
             if($task === null){
                 return new JsonResponse(['message' => 'Aucune tâche trouvée !'], Response::HTTP_BAD_REQUEST);
             }
+
+            //teste si le status est correct
+            if(!in_array($status, ['hors programme', 'en cours', 'terminée'])){
+                return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
+            }
+
             try {
                 $title = $task->getTitle();
-                $task->setStatus($data['status']);
+                $task->setStatus($status);
                 $em->flush();
             } catch  (Exception $e) {
                 return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
             }
             
-            return new JsonResponse(['message' => "Tâche ".$title." ".$data['status']]);
+            return new JsonResponse(['message' => "Tâche ".$title." ".$status]);
         }
         else{
             return new JsonResponse(['message' => 'Cet appel doit être effectué via AJAX.'], Response::HTTP_BAD_REQUEST);
