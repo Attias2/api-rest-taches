@@ -14,10 +14,13 @@ function updateStatus(id, status) {
             document.getElementById('result').innerText = `Problème - code d'état HTTP :  ${response.status}`;
         }
         console.log('response : ',response);
-         return response.json();
+        return response.json();
 
     }).then((body) => {
-        console.log(body);
+        console.log('body : ',body);
+
+        document.getElementById('result').innerText = body.message;
+
     })
     .catch(error => document.getElementById('result').innerText = `Erreur: ${error}`);
 }

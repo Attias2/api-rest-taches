@@ -67,7 +67,7 @@ class TaskController extends AbstractController
      * 
     */
     #[Route('/update/task/{id}', name: 'update_task')]
-    public function updateTask(Request $request, EntityManagerInterface $em, int $id = 0, SessionInterface $session): Response
+    public function updateTask(Request $request, EntityManagerInterface $em, SessionInterface $session, int $id = 0): Response
     {
         //récupération de la tâche
         $task = $em->getRepository(Task::class)->find($id);
@@ -162,20 +162,20 @@ class TaskController extends AbstractController
 
             //teste si la tâche existe, si on renvoit un message d'erreur
             if($task === null){
-                return new JsonResponse(['error' => 'Aucune tâche trouvée !'], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['message' => 'Aucune tâche trouvée !'], Response::HTTP_BAD_REQUEST);
             }
             try {
                 $title = $task->getTitle();
                 $task->setStatus($data['status']);
                 $em->flush();
             } catch  (Exception $e) {
-                return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
             }
             
             return new JsonResponse(['message' => "Tâche ".$title." ".$data['status']]);
         }
         else{
-            return new JsonResponse(['error' => 'Cet appel doit être effectué via AJAX.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => 'Cet appel doit être effectué via AJAX.'], Response::HTTP_BAD_REQUEST);
         }
     }
 }
