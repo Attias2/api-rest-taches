@@ -4,7 +4,7 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-    <script type="text/javascript" src="{{ asset('js/deleteTask.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/updateStatus.js') }}"></script>
 
     
 {% endblock %}
@@ -28,10 +28,43 @@
         </thead>
         <tbody>
             {% for task in tasks %}
+                {% set status = task.getStatus() %} {#stockage du status dans une varible #}
+                {% set id = task.getId() %} {#stockage du status dans une varible #}
                 <tr>
-                    <td>{{ task.getId() }}</td>
+                    <td>{{ id }}</td>
                     <td>{{ task.getTitle() }}</td>
-                    <td>{{ task.getStatus() }}</td>{# updateStatus #}
+                    <td>
+                        
+                        <fieldset>
+                            
+                            <div>
+                                <input
+                                    type="radio" id="hp_{{ id }}" name="status_{{ id }}" value="hors programme"
+                                    onchange="updateStatus({{ id }},'hors programme')"
+                                    {% if status == 'hors programme' %}checked{% endif %} />{# teste de la valeur pour cocher le input #}
+                                <label for="hp_{{ id }}">Hors programme</label>
+                            </div>
+
+                            <div>
+                                <input
+                                    type="radio" id="ec_{{ id }}" name="status_{{ id }}" value="en cours" 
+                                    onchange="updateStatus({{ id }},'en cours')"
+                                    {% if status == 'en cours' %}checked{% endif %}/>
+                                <label for="ec_{{ id }}">En cours</label>
+                            </div>
+
+                            <div>
+                                <input
+                                    type="radio" id="ter_{{ id }}" name="status_{{ id }}" value="terminée"
+                                    onchange="updateStatus({{ id }},'terminée')"
+                                    {% if status == 'terminée' %}checked{% endif %}/>
+                                <label for="ter_{{ id }}">Terminée</label>
+                            </div>
+                            
+                        </fieldset>
+                        
+                    </td>
+
                     <td>
                         <p>{{ task.getDescription() }}</p>
                     </td>
@@ -121,6 +154,7 @@
         {% if  message is defined %}
             <p style="color:red;">{{ message }}</p>
         {% endif %}
+        <div id="result"></div>
     </div>
 </div>
 

@@ -67,7 +67,7 @@ class TaskController extends AbstractController
      * 
     */
     #[Route('/update/task/{id}', name: 'update_task')]
-    public function updateTask(Request $request, EntityManagerInterface $em, int $id = null, SessionInterface $session): Response
+    public function updateTask(Request $request, EntityManagerInterface $em, int $id = 0, SessionInterface $session): Response
     {
         //récupération de la tâche
         $task = $em->getRepository(Task::class)->find($id);
@@ -124,11 +124,11 @@ class TaskController extends AbstractController
 
 
 
-     /**
+    /**
      * Supression de la tâche
      */
     #[Route('/delete/task/{id}', name: 'delete_task')]//Récupération de l'id dans la route
-    public function deleteTask(Request $request, EntityManagerInterface $em, int $id = null): Response
+    public function deleteTask(Request $request, EntityManagerInterface $em, int $id = 0): Response
     {
         //récupération de la tâche
         $task = $em->getRepository(Task::class)->find($id);
@@ -144,5 +144,38 @@ class TaskController extends AbstractController
         $this->addFlash('success', "Tâche $title supprimée !");
         return $this->redirectToRoute('app_task');
 
+    }
+
+    /**
+     * Change l'état de la tâche
+     */
+    #[Route('/update/status', name: 'update_status', methods: ['POST'])]//Récupération de l'id dans la route et le met à 0 par défaut
+    public function updateStatus(Request $request, EntityManagerInterface $em): JsonResponse|Response
+    {
+        //teste si 
+        if($request->isXmlHttpRequest()) {
+
+            //récupération des données
+            $data = json_decode($request->getContent(), true);
+            //récupération de la tâche
+            $task = $em->getRepository(Task::class)->find($data['id']);
+
+            //teste si la tâche existe, si on renvoit un message d'erreur
+            if($task === null){
+                return new JsonResponse(['error' => 'Aucune tâche trouvée !'], Response::HTTP_BAD_REQUEST);
+            }
+            try {
+                $title = $task->getTitle();
+                $task->setStatus($data['status']);
+                $em->flush();
+            } catch  (Exception $e) {
+                return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            }
+            
+            return new JsonResponse(['message' => "Tâche ".$title." ".$data['status']]);
+        }
+        else{
+            return new JsonResponse(['error' => 'Cet appel doit être effectué via AJAX.'], Response::HTTP_BAD_REQUEST);
+        }
     }
 }

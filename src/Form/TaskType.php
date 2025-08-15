@@ -12,7 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class TaskType extends AbstractType
 {
-    public const STATUSES = ['hors programme', 'en cours', 'terminé'];
+    public const STATUSES = ['hors programme', 'en cours', 'terminée'];
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
