@@ -1,7 +1,6 @@
-function updateStatus(id, status) {
-    fetch(`/update/${id}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ 'status': status }),
+function deleteTask(id) {
+    fetch(`/delete/${id}/task/`, {
+        method: 'DELETE',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/json',
@@ -15,8 +14,9 @@ function updateStatus(id, status) {
         return response.json();
     })
     .then(body => {
-        if (body.taskStatusUdated) {
-            document.getElementById('task_'+id).children[5].innerText = body.taskStatusUdated.updatedAt;
+        console.log('body : ', body);
+        if (body.delete) {
+            document.getElementById(`task_${id}`).remove();
         }
         document.getElementById('result').innerText = body.message;
     })

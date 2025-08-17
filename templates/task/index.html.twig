@@ -1,17 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Index Task{% endblock %}
+{% block title %}Task Manager{% endblock %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-    <script type="text/javascript" src="{{ asset('js/updateStatus.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+<script type="text/javascript" src="{{ asset('js/updateStatus.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/lstTasks.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/creatTask.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/deleteTask.js') }}"></script>
 
-    
 {% endblock %}
 
 {% block body %}
+<h1>Liste des tâches</h1>
 
 <div>
+
     <table class="styled-table">
         <caption>Tasks</caption>
         <thead>
@@ -26,139 +30,38 @@
                 <th>Update</th>
             </tr>
         </thead>
-        <tbody>
-            {% for task in tasks %}
-                {% set status = task.getStatus() %} {#stockage du status dans une varible #}
-                {% set id = task.getId() %} {#stockage du status dans une varible #}
-                <tr id='task_{{ id }}'>
-                    <td>{{ id }}</td>
-                    <td>{{ task.getTitle() }}</td>
-                    <td>
-
-                        <fieldset>
-                            
-                            <div>
-                                <input
-                                    type="radio" id="hp_{{ id }}" name="status_{{ id }}" value="en retard"
-                                    onchange="updateStatus({{ id }},'en retard')"
-                                    {% if status == 'en retard' %}checked{% endif %} />
-                                    {# teste de la valeur pour cocher le input #}
-                                <label for="hp_{{ id }}">En retard</label>
-                            </div>
-
-                            <div>
-                                <input
-                                    type="radio" id="ec_{{ id }}" name="status_{{ id }}" value="en cours" 
-                                    onchange="updateStatus({{ id }},'en cours')"
-                                    {% if status == 'en cours' %}checked{% endif %}/>
-                                <label for="ec_{{ id }}">En cours</label>
-                            </div>
-
-                            <div>
-                                <input
-                                    type="radio" id="ter_{{ id }}" name="status_{{ id }}" value="terminée"
-                                    onchange="updateStatus({{ id }},'terminée')"
-                                    {% if status == 'terminée' %}checked{% endif %}/>
-                                <label for="ter_{{ id }}">terminée</label>
-                            </div>
-                            
-                        </fieldset>
-                        
-                    </td>
-
-                    <td>
-                        <p>{{ task.getDescription() }}</p>
-                    </td>
-                    <td>{{ task.getCreatedAt().format('d/m/Y H:i') }}</td>
-                    <td>{{ task.getUpdatedAt().format('d/m/Y H:i') }}</td>
-                    <td>
-                        <a href="{{ path('delete_task', { id: task.getId() }) }}">Delete</a>
-                    </td>
-                    <td>
-                        <a href="{{ path('update_task', { id: task.getId() }) }}">Update</a>
-                    </td>
-                 
-            {% endfor %}
-            
-            
-
+        <tbody id="tasks-body">
         </tbody>
-
         <tfoot>
             <tr id="add">
-                    {{ form_start(form) }}
-
-                            <td colspan="2">
-                                {{ form_row(form.title) }}
-                            </td>
-                            <td>
-                                {{ form_row(form.status) }}
-                            </td>
-                            <td>
-                                {{ form_row(form.description) }}
-                            </td>
-
-                            <td>
-                                {{ form_row(form.Ajouter, {'attr': {'class': 'btn-add'}}) }}
-                            </td>
-
-                        
-                    {{ form_end(form) }}
+                <td colspan="2">
+                    <input type="text" id="title" name="title" placeholder="Titre" required>
+                </td>
+                <td>
+                    <select name="status" id="status">
+                        <option value="en cours">En cours</option>
+                        <option value="terminée">Terminée</option>
+                        <option value="en retard">En retard</option>
+                    </select>
+                </td>
+                <td>
+                    <textarea name="description" id="description" placeholder="Description" required></textarea>
+                </td>
+                <td colspan="4">
+                    <button class="btn-add" onclick="creatTask()">Ajouter</button>
+                </td>
             </tr>
         </tfoot>
     </table>
-    
-
-    <div id='result'>
-        {# teste si un message d'erreur est à afficher #}
-        {% if  app.flashes('error') is defined %}
-            {% for message in app.flashes('error') %}
-                <p style="color:red;">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
 
 
-        {% if  app.flashes('success') is defined %}
-            {% for message in app.flashes('success') %}
-                <p style="color:green;">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-
-        {% if taskA is defined and taskA is not null %}
-            <table class="styled-table">
-                <caption>Tâche {{ taskA.getTitle() }} ajoutée</caption>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Titre</th>
-                        <th>Status</th>
-                        <th>Description</th>
-                        <th>Begin At</th>
-                        <th>Treat At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ taskA.getId() }}</td>
-                        <td>{{ taskA.getTitle() }}</td>
-                        <td>{{ taskA.getStatus() }}</td>
-                        <td>
-                            <p>{{ taskA.getDescription() }}</p>
-                        </td>
-                        <td>{{ taskA.getCreatedAt().format('d/m/Y H:i') }}</td>
-                        <td>{{ taskA.getUpdatedAt().format('d/m/Y H:i') }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        {% endif %}
 
 
-        {% if  message is defined %}
-            <p style="color:red;">{{ message }}</p>
-        {% endif %}
-        <div id="result"></div>
-    </div>
+
+
 </div>
+
+<div id="result"></div>
 
 
 {% endblock %}

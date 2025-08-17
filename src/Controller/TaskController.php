@@ -26,42 +26,103 @@ class TaskController extends AbstractController
     #[Route('/task', name: 'app_task')]
     public function index(Request $request, EntityManagerInterface $em, SessionInterface $session): Response
     {
-        // création du formulaire d'ajout
+        return $this->render('task/index.html.twig');
+    }
+
+    /*
+    * AJOUTE UNe TÂCHE
+    * */
+    #[Route('/lst/tasks', name: 'lst_tasks', methods: ['GET'])]
+    public function lstTasks(Request $request, EntityManagerInterface $em): Response
+    {
+        // Vérifie si la requête est AJAX ou JSON
+        if (!$request->isXmlHttpRequest()) {
+            return new JsonResponse(['message' => 'Cet appel doit être effectué via AJAX.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+
+        //récupération des Tâches
+        $tasks =  $em->getRepository(Task::class)->findAll();
+
+
+        //stockages de donnée dans un tableu simple pour economiser l'espace mémoir
+        //il sera traité aver une boucle for et on s'y repéra de par les numero des key
+        $dataTasks = [];
+        foreach($tasks as $task){
+            $dataTasks[] = $task->getId();
+            $dataTasks[] = $task->getTitle();
+            $dataTasks[] = $task->getStatus();
+            $dataTasks[] = $task->getDescription();
+            $dataTasks[] = $task->getCreatedAt()->format('Y-m-d H:i:s');// les date sont converties en string pour ne avoir à traiter des objets
+            $dataTasks[] = $task->getUpdatedAt()->format('Y-m-d H:i:s');
+        }
+
+
+        // Réponse JSON
+        return new JsonResponse([
+            'message' => NULL,
+            'dataTasks' => $dataTasks,
+        ]);
+    }
+
+    /*
+    * AJOUTE UNe TÂCHE
+    * */
+    #[Route('/add/task', name: 'add_task', methods: ['POST'])]
+    public function addTask(Request $request, EntityManagerInterface $em): Response
+    {
+        // Vérifie si la requête est AJAX ou JSON
+        if (!$request->isXmlHttpRequest()) {
+            return new JsonResponse(['message' => 'Cet appel doit être effectué via AJAX.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+
+        //récupération des données transmises
+        $data = json_decode($request->getContent(), true);
+
+        // teste de la présence des champs attendu
+        if (!isset($data['title']) || !isset($data['description']) || !isset($data['status'])) {
+            return new JsonResponse(['message' => 'Les champs title, description et status sont requis !'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        
+        $status = $data['status'];
+
+        //teste si le status est correct
+        if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
+            return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $title = $data['title'];
+        $description = $data['description'];
+
+
+        // création de la tâche
         $task = new Task();
-        $form = $this->createForm(TaskType::class, $task);
+        $task->setTitle($title);
+        $task->setDescription($description);
+        $task->setStatus($status);
+        $task->setCreatedAtValue();
 
-
-        $form->handleRequest($request);
-
-        //Teste si le formulaire est soumis et valide
-        if ($form->isSubmitted() && $form->isValid()) {
-            $task = $form->getData();
+        try {
             $em->persist($task);
             $em->flush();
-
-            //Stocke l'id de la tâche créée en session
-            $session->set('lastCreatedTaskId', $task->getId());
-
-            //Redirection
-            return $this->redirectToRoute('app_task');
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => 'Erreur lors de la création de la tâche : '.$e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        // Récupère la tâche créée depuis la session
-        $taskAEntity = null;
-        $lastCreatedTaskId = $session->get('lastCreatedTaskId');
-        if ($lastCreatedTaskId) {
-            $taskAEntity = $em->getRepository(Task::class)->find($lastCreatedTaskId);
-            // Supprime la clé en session pour que ça n'apparaisse plus au prochain chargement
-            $session->remove('lastCreatedTaskId');
-        }
 
-        // Récupère de toute les la tâches
-        $tasks = $em->getRepository(Task::class)->findAll();
-
-        return $this->render('task/index.html.twig', [
-            'form' => $form->createView(),
-            'tasks' => $tasks,
-            'taskA' => $taskAEntity
+        // Réponse JSON
+        return new JsonResponse([
+            'message' => "Tâche '{$task->getTitle()}' créée avec succès !",
+            'taskCreated' => [
+                'id' => $task->getId(),
+                'title' => $task->getTitle(),
+                'description' => $task->getDescription(),
+                'status' => $task->getStatus(),
+                'createdAt' => $task->getCreatedAt()->format('Y-m-d H:i:s'),
+                'updatedAt' => $task->getUpdatedAt()->format('Y-m-d H:i:s'),
+            ]
         ]);
     }
 
@@ -69,7 +130,7 @@ class TaskController extends AbstractController
      *modification de tâche 
      * 
     */
-    #[Route('/update/task/{id}', name: 'update_task')]
+    #[Route('/update/task/{id}', name: 'update_task', methods: ['GET', 'POST'])]
     public function updateTask(Request $request, EntityManagerInterface $em, SessionInterface $session, int $id = 0): Response
     {
         //récupération de la tâche
@@ -128,65 +189,85 @@ class TaskController extends AbstractController
 
 
     /**
-     * Supression de la tâche
+     * Supression d'une tâche
      */
-    #[Route('/delete/task/{id}', name: 'delete_task')]//Récupération de l'id dans la route
+    #[Route('/delete/{id}/task/', name: 'delete_task', methods: 'DELETE')]//Récupération de l'id dans la route
     public function deleteTask(Request $request, EntityManagerInterface $em, int $id = 0): Response
     {
+        // Vérifie si la requête est AJAX ou JSON
+        if (!$request->isXmlHttpRequest()) {
+            return new JsonResponse(['message' => 'Cet appel doit être effectué via AJAX.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+            
         //récupération de la tâche
         $task = $em->getRepository(Task::class)->find($id);
-
-        //teste si la tâche existe, si non on retourne sur la route
+        
+        //teste si la tâche n'existe pas, si on renvoit un message d'erreur
         if($task === null){
-            $this->addFlash('error', 'Aucune tâche trouvée !');
-            return $this->redirectToRoute('app_task');
+            return new JsonResponse(['message' => 'Aucune tâche trouvée !'], Response::HTTP_NOT_FOUND);
         }
+
+        //récupération du titre pour le message de confirmation
         $title = $task->getTitle();
+
         $em->remove($task);
         $em->flush();
-        $this->addFlash('success', "Tâche $title supprimée !");
-        return $this->redirectToRoute('app_task');
+
+        return new JsonResponse([
+            'delete' => !($task === null),
+            'message' => "Tâche $title supprimée"
+        ]);
 
     }
 
-    /**
+   /**
      * Change l'état de la tâche
      */
-    #[Route('/update/status', name: 'update_status', methods: ['POST'])]//Récupération de l'id dans la route et le met à 0 par défaut
-    public function updateStatus(Request $request, EntityManagerInterface $em): JsonResponse|Response
+    #[Route('/update/{id}/status', name: 'update_status', methods: ['PATCH'])]//Récupération de l'id dans la route et le met à 0 par défaut
+    public function updateStatus(Request $request, EntityManagerInterface $em, int $id = 0): JsonResponse|Response
     {
-        //teste si 
-        if($request->isXmlHttpRequest()) {
-
-            //récupération des données
-            $data = json_decode($request->getContent(), true);
-            //récupération de la tâche
-            $task = $em->getRepository(Task::class)->find($data['id']);
-
-            $status = $data['status'];
-
-            //teste si la tâche existe, si on renvoit un message d'erreur
-            if($task === null){
-                return new JsonResponse(['message' => 'Aucune tâche trouvée !'], Response::HTTP_BAD_REQUEST);
-            }
-
-            //teste si le status est correct
-            if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
-                return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
-            }
-
-            try {
-                $title = $task->getTitle();
-                $task->setStatus($status);
-                $em->flush();
-            } catch  (Exception $e) {
-                return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-            }
+        // Vérifie si la requête est AJAX ou JSON
+        if (!$request->isXmlHttpRequest()) {
+            return new JsonResponse(['message' => 'Cet appel doit être effectué via AJAX.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
             
-            return new JsonResponse(['message' => "Tâche ".$title." ".$status]);
+        //récupération de la tâche
+        $task = $em->getRepository(Task::class)->find($id);
+        
+        //teste si la tâche n'existe pas, si on renvoit un message d'erreur
+        if($task === null){
+            return new JsonResponse(['message' => 'Aucune tâche trouvée !'], Response::HTTP_NOT_FOUND);
         }
-        else{
-            return new JsonResponse(['message' => 'Cet appel doit être effectué via AJAX.'], Response::HTTP_BAD_REQUEST);
+
+        //récupération des données
+        $data = json_decode($request->getContent(), true);
+
+        $status = $data['status'];
+
+        // Vérification de la présence du status
+        if (!isset($data['status'])) {
+            return new JsonResponse(['message' => 'Le champ "status" est requis !'], JsonResponse::HTTP_BAD_REQUEST);
         }
+
+        //teste si le status est correct
+        if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
+            return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $task->setStatus($status);
+        $em->flush();
+
+        $title = $task->getTitle();
+        return new JsonResponse([
+            'taskStatusUdated' => [
+                'id' => $task->getId(),
+                'title' => $title,
+                'status' => $status,
+                'updatedAt' => $task->getUpdatedAt()->format('Y-m-d H:i:s'),
+            ],
+            'message' => "Tâche $title $status"
+        ]);
+
+        
     }
 }
