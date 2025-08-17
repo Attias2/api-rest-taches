@@ -29,6 +29,8 @@ class TaskController extends AbstractController
         // création du formulaire d'ajout
         $task = new Task();
         $form = $this->createForm(TaskType::class, $task);
+
+
         $form->handleRequest($request);
 
         //Teste si le formulaire est soumis et valide
@@ -53,12 +55,13 @@ class TaskController extends AbstractController
             $session->remove('lastCreatedTaskId');
         }
 
+        // Récupère de toute les la tâches
         $tasks = $em->getRepository(Task::class)->findAll();
 
         return $this->render('task/index.html.twig', [
             'form' => $form->createView(),
             'tasks' => $tasks,
-            'taskA' => $taskAEntity,
+            'taskA' => $taskAEntity
         ]);
     }
 
@@ -168,7 +171,7 @@ class TaskController extends AbstractController
             }
 
             //teste si le status est correct
-            if(!in_array($status, ['hors programme', 'en cours', 'terminée'])){
+            if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
                 return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
             }
 

@@ -30,19 +30,20 @@
             {% for task in tasks %}
                 {% set status = task.getStatus() %} {#stockage du status dans une varible #}
                 {% set id = task.getId() %} {#stockage du status dans une varible #}
-                <tr>
+                <tr id='task_{{ id }}'>
                     <td>{{ id }}</td>
                     <td>{{ task.getTitle() }}</td>
                     <td>
-                        
+
                         <fieldset>
                             
                             <div>
                                 <input
-                                    type="radio" id="hp_{{ id }}" name="status_{{ id }}" value="hors programme"
-                                    onchange="updateStatus({{ id }},'hors programme')"
-                                    {% if status == 'hors programme' %}checked{% endif %} />{# teste de la valeur pour cocher le input #}
-                                <label for="hp_{{ id }}">Hors programme</label>
+                                    type="radio" id="hp_{{ id }}" name="status_{{ id }}" value="en retard"
+                                    onchange="updateStatus({{ id }},'en retard')"
+                                    {% if status == 'en retard' %}checked{% endif %} />
+                                    {# teste de la valeur pour cocher le input #}
+                                <label for="hp_{{ id }}">En retard</label>
                             </div>
 
                             <div>
@@ -108,7 +109,7 @@
     </table>
     
 
-    <div id='result'>
+    <div>
         {# teste si un message d'erreur est à afficher #}
         {% if  app.flashes('error') is defined %}
             {% for message in app.flashes('error') %}
@@ -123,7 +124,7 @@
             {% endfor %}
         {% endif %}
 
-        {% if  taskA is defined and taskA is not null %}
+        {% if taskA is defined and taskA is not null %}
             <table class="styled-table">
                 <caption>Tâche {{ taskA.getTitle() }} ajoutée</caption>
                 <thead>
@@ -150,6 +151,7 @@
                 </tbody>
             </table>
         {% endif %}
+
 
         {% if  message is defined %}
             <p style="color:red;">{{ message }}</p>

@@ -26,7 +26,7 @@ class Task
     //validateur symfony qui teste si la valeur de statut est dans STATUSES et renvoit message si ce n'est pas le cas
     #[Assert\Choice(choices: Task::STATUSES, message: "Choisissez un statut valide.")]
     private string $status;
-    public const STATUSES = ['hors programme', 'en cours', 'terminée'];
+    public const STATUSES = ['en retard', 'en cours', 'terminée'];
 
     //utilisation de la classe Timestampable pour avoir les champs creat_at et updat_at
     //qui permettent de connaitre les moments de créations et de modifications

@@ -12,7 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class TaskType extends AbstractType
 {
-    public const STATUSES = ['hors programme', 'en cours', 'terminée'];
+    public const STATUSES = ['en retard', 'en cours', 'terminée'];
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -24,7 +24,6 @@ class TaskType extends AbstractType
             ])
             ->add('status', ChoiceType::class, [
                 'choices' => array_combine(Task::STATUSES, Task::STATUSES),
-                'data' => 'en cours', //valeur par défaut
                 'required' => true,
             ])
             ->add('Ajouter', SubmitType::class)

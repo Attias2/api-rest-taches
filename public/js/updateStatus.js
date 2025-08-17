@@ -13,13 +13,14 @@ function updateStatus(id, status) {
         if (!response.ok) {
             document.getElementById('result').innerText = `Problème - code d'état HTTP :  ${response.status}`;
         }
-        console.log('response : ',response);
+        console.log('response : ', response);
         return response.json();
 
     }).then((body) => {
-        console.log('body : ',body);
-
+        console.log('body : ', body);
         document.getElementById('result').innerText = body.message;
+        document.getElementById(`task_${id}`).children[4] = body.message;
+        
 
     })
     .catch(error => document.getElementById('result').innerText = `Erreur: ${error}`);
