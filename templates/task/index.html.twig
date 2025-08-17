@@ -109,7 +109,7 @@
     </table>
     
 
-    <div>
+    <div id='result'>
         {# teste si un message d'erreur est à afficher #}
         {% if  app.flashes('error') is defined %}
             {% for message in app.flashes('error') %}
