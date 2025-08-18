@@ -20,10 +20,14 @@ function creatTask() {
     })
     .then(body => {
         console.log('body : ', body);
-        if (body.taskCreated) {
-            document.getElementById('tasks-body').appendChild(creatTr(body.taskCreated));
+        let taskCreated = body.taskCreated;
+        if (taskCreated) {
+            document.getElementById('tasks-body').appendChild(creatTr(taskCreated));
         }
-        document.getElementById('result').innerText = body.message;
+        document.getElementById('title').value = "";
+        document.getElementById('description').value = "";
+        document.getElementById('status').value = "";
+        document.getElementById('result').innerHTML = creatTableBilan(taskCreated, body.message);
     })
     .catch(error => {
         document.getElementById('result').innerText = `Erreur: ${error}`;
@@ -72,4 +76,32 @@ function creatTr(taskCreated){
         <td><a href="/update/task/${id}">Update</a></td>`;
 
         return tr;
+}
+
+
+function creatTableBilan(taskCreated, message){
+    let table = `
+    <table class='styled-table'>
+        <caption>${message}</caption>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Status</th>
+                <th>Description</th>
+                <th>Creat At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>${taskCreated.id}</td>
+                <td>${taskCreated.title}</td>
+                <td>${taskCreated.status}</td>
+                <td>${taskCreated.description}</td>
+                <td>${taskCreated.createdAt}</td>
+            </tr>
+        </tbody>
+    </table>`;
+
+    return table;
 }
