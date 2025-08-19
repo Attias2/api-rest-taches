@@ -85,17 +85,39 @@ class TaskController extends AbstractController
             return new JsonResponse(['message' => 'Les champs title, description et status sont requis !'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        
+        //message d'erreur à afficher en cas d'erreur
+        $message = '';
+        //booleen qui teste si un champs a mal été saisi
+        $error = false;
         $status = $data['status'];
 
         //teste si le status est correct
         if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
-            return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
+            $message .= 'Status invalide ! ';
+            $error = true;
         }
 
         $title = $data['title'];
+
+        //teste si le titre est saisi
+        if($title !== ""){
+            $message .= 'Titre non saisi ';
+            $error = true;
+        }
+
+
         $description = $data['description'];
 
+        //teste si la description est saisie
+        if($description !== ""){
+            $message .= 'description non saisie';
+            $error = true;
+        }
+
+        //renvoi un message en cas de mauvaise saisi
+        if($error){
+            return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+        }
 
         // création de la tâche
         $task = new Task();

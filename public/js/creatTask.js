@@ -20,17 +20,22 @@ function creatTask() {
     })
     .then(body => {
         console.log('body : ', body);
+        //teste si la tâche a été crée
         let taskCreated = body.taskCreated;
         if (taskCreated) {
             document.getElementById('tasks-body').appendChild(creatTr(taskCreated));
+            document.getElementById('title').value = "";
+            document.getElementById('description').value = "";
+            document.getElementById('status').value = "";
+            document.getElementById('result').innerHTML = creatTableBilan(taskCreated, body.message);
         }
-        document.getElementById('title').value = "";
-        document.getElementById('description').value = "";
-        document.getElementById('status').value = "";
-        document.getElementById('result').innerHTML = creatTableBilan(taskCreated, body.message);
+        else{
+            document.getElementById('result').innerHTML = body.message;
+        }
+        
     })
     .catch(error => {
-        document.getElementById('result').innerText = `Erreur: ${error}`;
+        //document.getElementById('result').innerText = `Erreur: ${error}`;
         console.error(error);
     });
 }
