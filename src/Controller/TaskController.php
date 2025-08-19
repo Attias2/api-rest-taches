@@ -16,24 +16,42 @@ use App\Form\TaskType;
 
 class TaskController extends AbstractController
 {
-    //Redirection automatique vers la route amenant à la page principale
+    public function __construct(private EntityManagerInterface $entityManager) {}
+
+    /**
+     * Redirection automatique vers la route amenant à la page principale
+     * 
+     * 
+     * @return RedirectResponse
+     */
     #[Route('/', name: 'home')]
     public function home(): RedirectResponse
     {
         return $this->redirectToRoute('app_task');
     }
     
+
+    /**
+     *
+     * 
+     * @return Response
+    */
     #[Route('/task', name: 'app_task')]
-    public function index(Request $request, EntityManagerInterface $em, SessionInterface $session): Response
+    public function index(): Response
     {
         return $this->render('task/index.html.twig');
     }
 
-    /*
-    * AJOUTE UNe TÂCHE
-    * */
+    /**
+     * Lister les tâches
+     * 
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     * 
+    */
     #[Route('/lst/tasks', name: 'lst_tasks', methods: ['GET'])]
-    public function lstTasks(Request $request, EntityManagerInterface $em): Response
+    public function lstTasks(Request $request): JsonResponse
     {
         // Vérifie si la requête est AJAX ou JSON
         if (!$request->isXmlHttpRequest()) {
@@ -42,7 +60,7 @@ class TaskController extends AbstractController
 
 
         //récupération des Tâches
-        $tasks =  $em->getRepository(Task::class)->findAll();
+        $tasks =  $this->entityManager->getRepository(Task::class)->findAll();
 
 
         //stockages de donnée dans un tableu simple pour economiser l'espace mémoir
@@ -57,7 +75,6 @@ class TaskController extends AbstractController
             $dataTasks[] = $task->getUpdatedAt()->format('Y-m-d H:i:s');
         }
 
-
         // Réponse JSON
         return new JsonResponse([
             'message' => NULL,
@@ -65,11 +82,15 @@ class TaskController extends AbstractController
         ]);
     }
 
-    /*
-    * AJOUTE UNe TÂCHE
-    * */
+    /**
+     * Ajouter une tâche
+     * 
+     * @param Request $request
+     * 
+     * @return JsonResponse
+    */
     #[Route('/add/task', name: 'add_task', methods: ['POST'])]
-    public function addTask(Request $request, EntityManagerInterface $em): Response
+    public function addTask(Request $request): JsonResponse
     {
         // Vérifie si la requête est AJAX ou JSON
         if (!$request->isXmlHttpRequest()) {
@@ -127,8 +148,8 @@ class TaskController extends AbstractController
         $task->setCreatedAtValue();
 
         try {
-            $em->persist($task);
-            $em->flush();
+            $this->entityManager->persist($task);
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             return new JsonResponse(['message' => 'Erreur lors de la création de la tâche : '.$e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
         }
@@ -149,14 +170,20 @@ class TaskController extends AbstractController
     }
 
     /** 
-     *modification de tâche 
+     * modification de tâche
      * 
-    */
-    #[Route('/update/task/{id}', name: 'update_task', methods: ['GET', 'POST'])]
-    public function updateTask(Request $request, EntityManagerInterface $em, SessionInterface $session, int $id = 0): Response
+     * @param Request Request
+     * @param SessionInterface $session
+     * @param Task $task
+     * 
+     * @return Response|RedirectResponse
+     * 
+     */
+    #[Route('/update/task/{task}', name: 'update_task', methods: ['GET', 'POST'])]
+    public function updateTask(Request $request, SessionInterface $session, Task $task): Response|RedirectResponse 
     {
         //récupération de la tâche
-        $task = $em->getRepository(Task::class)->find($id);
+        //$task = $this->entityManager->getRepository(Task::class)->find($id);
 
         //Teste si la tâche existe
         if ($task === null) {
@@ -175,8 +202,8 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($task);
-            $em->flush();
+            $this->entityManager->persist($task);
+            $this->entityManager->flush();
             
             //Stocke un booleen qui sert à tester si une modification est faite
             $session->set('isModified', true);
@@ -212,9 +239,14 @@ class TaskController extends AbstractController
 
     /**
      * Supression d'une tâche
+     * 
+     * @param Request $request
+     * @param Task $task
+     * 
+     * @return JsonResponse
      */
-    #[Route('/delete/{id}/task/', name: 'delete_task', methods: 'DELETE')]//Récupération de l'id dans la route
-    public function deleteTask(Request $request, EntityManagerInterface $em, int $id = 0): Response
+    #[Route('/delete/{id}/task/', name: 'delete_task', methods: 'DELETE')]
+    public function deleteTask(Request $request, Task $task): JsonResponse
     {
         // Vérifie si la requête est AJAX ou JSON
         if (!$request->isXmlHttpRequest()) {
@@ -222,7 +254,7 @@ class TaskController extends AbstractController
         }
             
         //récupération de la tâche
-        $task = $em->getRepository(Task::class)->find($id);
+        $task = $this->entityManager->getRepository(Task::class)->find($id);
         
         //teste si la tâche n'existe pas, si on renvoit un message d'erreur
         if($task === null){
@@ -232,8 +264,8 @@ class TaskController extends AbstractController
         //récupération du titre pour le message de confirmation
         $title = $task->getTitle();
 
-        $em->remove($task);
-        $em->flush();
+        $this->entityManager->remove($task);
+        $this->entityManager->flush();
 
         return new JsonResponse([
             'delete' => !($task === null),
@@ -242,11 +274,18 @@ class TaskController extends AbstractController
 
     }
 
-   /**
-     * Change l'état de la tâche
-     */
-    #[Route('/update/{id}/status', name: 'update_status', methods: ['PATCH'])]//Récupération de l'id dans la route et le met à 0 par défaut
-    public function updateStatus(Request $request, EntityManagerInterface $em, int $id = 0): JsonResponse|Response
+    /**
+    * 
+    * @param Request $request
+    * @param  Task $task
+    *
+    * @return JsonResponse
+    *
+    *
+    * Change l'état de la tâche
+    */
+    #[Route('/update/{task}/status', name: 'update_status', methods: ['PATCH'])]//Récupération de l'id dans la route et le met à 0 par défaut
+    public function updateStatus(Request $request, Task $task): JsonResponse
     {
         // Vérifie si la requête est AJAX ou JSON
         if (!$request->isXmlHttpRequest()) {
@@ -254,7 +293,7 @@ class TaskController extends AbstractController
         }
             
         //récupération de la tâche
-        $task = $em->getRepository(Task::class)->find($id);
+        // $task = $this->entityManager->getRepository(Task::class)->find($id);
         
         //teste si la tâche n'existe pas, si on renvoit un message d'erreur
         if($task === null){
@@ -277,7 +316,7 @@ class TaskController extends AbstractController
         }
 
         $task->setStatus($status);
-        $em->flush();
+        $this->entityManager->flush();
 
         $title = $task->getTitle();
         return new JsonResponse([

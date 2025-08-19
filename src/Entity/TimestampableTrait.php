@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTimeImmutable;
 
 
-trait Timestampable
+trait TimestampableTrait
 {
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;

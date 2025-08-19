@@ -1,10 +1,9 @@
 <?php
 
 namespace App\Entity;
-use App\Entity\Timestampable;
+use App\Entity\TimestampableTrait;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\HasLifecycleCallbacks] //Active les PrePersist/PreUpdate
@@ -18,19 +17,16 @@ class Task
     #[ORM\Column(length: 100)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $description = null;
+    #[ORM\Column(length: 255)]
+    private string $description;
 
-    
-    #[ORM\Column(type: "string", length: 20)]
-    //validateur symfony qui teste si la valeur de statut est dans STATUSES et renvoit message si ce n'est pas le cas
-    #[Assert\Choice(choices: Task::STATUSES, message: "Choisissez un statut valide.")]
-    private string $status;
-    public const STATUSES = ['en retard', 'en cours', 'terminée'];
+   
+    #[ORM\Column(type: "string", enumType: StatusEnum::class)]
+    private StatusEnum $status;
 
     //utilisation de la classe Timestampable pour avoir les champs creat_at et updat_at
     //qui permettent de connaitre les moments de créations et de modifications
-    use Timestampable;
+    use TimestampableTrait;
 
 
     public function getId(): ?int
@@ -50,24 +46,24 @@ class Task
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function setDescription(?string $description): static
+    public function setDescription(string $description): static
     {
         $this->description = $description;
 
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): StatusEnum
     {
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(StatusEnum $status): static
     {
         $this->status = $status;
 

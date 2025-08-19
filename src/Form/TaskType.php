@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Task;
+use App\Entity\StatusEnum;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -23,7 +24,9 @@ class TaskType extends AbstractType
                 'required' => true,
             ])
             ->add('status', ChoiceType::class, [
-                'choices' => array_combine(Task::STATUSES, Task::STATUSES),
+                'choices' => StatusEnum::cases(), // on récupère toutes les valeurs de l’enum
+                'choice_label' => fn(StatusEnum $choice) => $choice->value, // affichage dans le formulaire
+                'choice_value' => fn(?StatusEnum $choice) => $choice?->value, // valeur envoyée
                 'required' => true,
             ])
             ->add('Ajouter', SubmitType::class)
