@@ -75,8 +75,10 @@
                     <tr>
                         <td>Nouvelle version</td>
                         <td>{{ task.getTitle() }}</td>
-                        <td>{{ task.getStatus() }}</td>
-                        <td><p>{{ task.getDescription() }}</p></td>
+                        <td>{{ task.getStatus().value }}</td>
+                        <td>
+                            <p>{{ task.getDescription() }}</p>
+                        </td>
                     </tr>
                 </tbody>
             </table>

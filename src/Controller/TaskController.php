@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\StatusEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -139,12 +140,14 @@ class TaskController extends AbstractController
         if($error){
             return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
         }
-
+        
         // création de la tâche
         $task = new Task();
         $task->setTitle($title);
         $task->setDescription($description);
-        $task->setStatus($status);
+        
+        // conversion de string en enum
+        $task->setStatus(StatusEnum::from($status));
         $task->setCreatedAtValue();
 
         try {
@@ -174,16 +177,16 @@ class TaskController extends AbstractController
      * 
      * @param Request Request
      * @param SessionInterface $session
-     * @param Task $task
+     * @param id $id
      * 
      * @return Response|RedirectResponse
      * 
      */
-    #[Route('/update/task/{task}', name: 'update_task', methods: ['GET', 'POST'])]
-    public function updateTask(Request $request, SessionInterface $session, Task $task): Response|RedirectResponse 
+    #[Route('/update/task/{id}', name: 'update_task', methods: ['GET', 'POST'])]
+    public function updateTask(Request $request, SessionInterface $session, int $id): Response|RedirectResponse 
     {
         //récupération de la tâche
-        //$task = $this->entityManager->getRepository(Task::class)->find($id);
+        $task = $this->entityManager->getRepository(Task::class)->find($id);
 
         //Teste si la tâche existe
         if ($task === null) {
@@ -194,7 +197,7 @@ class TaskController extends AbstractController
         // Stockage dees anciennes valeurs dans un tableau avant modification
         $oldTaskData = [
             'title' => $task->getTitle(),
-            'status' => $task->getStatus(),
+            'status' => $task->getStatus()?->value,
             'description' => $task->getDescription()
         ];
 
@@ -241,12 +244,12 @@ class TaskController extends AbstractController
      * Supression d'une tâche
      * 
      * @param Request $request
-     * @param Task $task
+     * @param int $id
      * 
      * @return JsonResponse
      */
     #[Route('/delete/{id}/task/', name: 'delete_task', methods: 'DELETE')]
-    public function deleteTask(Request $request, Task $task): JsonResponse
+    public function deleteTask(Request $request, int $id = 0): JsonResponse
     {
         // Vérifie si la requête est AJAX ou JSON
         if (!$request->isXmlHttpRequest()) {
@@ -277,15 +280,15 @@ class TaskController extends AbstractController
     /**
     * 
     * @param Request $request
-    * @param  Task $task
+    * @param  int $id
     *
     * @return JsonResponse
     *
     *
     * Change l'état de la tâche
     */
-    #[Route('/update/{task}/status', name: 'update_status', methods: ['PATCH'])]//Récupération de l'id dans la route et le met à 0 par défaut
-    public function updateStatus(Request $request, Task $task): JsonResponse
+    #[Route('/update/{id}/status', name: 'update_status', methods: ['PATCH'])]
+    public function updateStatus(Request $request, int $id = 0): JsonResponse
     {
         // Vérifie si la requête est AJAX ou JSON
         if (!$request->isXmlHttpRequest()) {
@@ -293,7 +296,7 @@ class TaskController extends AbstractController
         }
             
         //récupération de la tâche
-        // $task = $this->entityManager->getRepository(Task::class)->find($id);
+        $task = $this->entityManager->getRepository(Task::class)->find($id);
         
         //teste si la tâche n'existe pas, si on renvoit un message d'erreur
         if($task === null){
@@ -314,8 +317,8 @@ class TaskController extends AbstractController
         if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
             return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
         }
-
-        $task->setStatus($status);
+        // conversion de string en enum
+        $task->setStatus(StatusEnum::from($status));
         $this->entityManager->flush();
 
         $title = $task->getTitle();

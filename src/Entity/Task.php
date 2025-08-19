@@ -24,7 +24,7 @@ class Task
     #[ORM\Column(type: "string", enumType: StatusEnum::class)]
     private StatusEnum $status;
 
-    //utilisation de la classe Timestampable pour avoir les champs creat_at et updat_at
+    //utilisation du trait Timestampable pour avoir les champs creat_at et updat_at
     //qui permettent de connaitre les moments de créations et de modifications
     use TimestampableTrait;
 
