@@ -100,7 +100,7 @@ class TaskController extends AbstractController
         $title = $data['title'];
 
         //teste si le titre est saisi
-        if($title !== ""){
+        if($title === ""){
             $message .= 'Titre non saisi ';
             $error = true;
         }
@@ -109,7 +109,7 @@ class TaskController extends AbstractController
         $description = $data['description'];
 
         //teste si la description est saisie
-        if($description !== ""){
+        if($description === ""){
             $message .= 'description non saisie';
             $error = true;
         }
