@@ -183,7 +183,7 @@ class TaskController extends AbstractController
      * 
      */
     #[Route('/update/task/{id}', name: 'update_task', methods: ['GET', 'POST'])]
-    public function updateTask(Request $request, SessionInterface $session, int $id): Response|RedirectResponse 
+    public function updateTask(Request $request, SessionInterface $session, int $id = 0): Response|RedirectResponse 
     {
         //récupération de la tâche
         $task = $this->entityManager->getRepository(Task::class)->find($id);

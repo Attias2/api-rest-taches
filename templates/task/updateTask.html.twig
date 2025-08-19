@@ -41,9 +41,9 @@
                         {{ form_row(form.description) }}
                     </td>
                 
-                    <td>{{ task.getCreatedAt().format('d/m/Y H:i') }}</td>
+                    <td>{{ task.getCreatedAt().format('d/m/Y  H:i:s') }}</td>
 
-                    <td>{{ task.getUpdatedAt().format('d/m/Y H:i') }}</td>
+                    <td>{{ task.getUpdatedAt().format('d/m/Y  H:i:s') }}</td>
                 </tr>
             </tbody>
         </table>
