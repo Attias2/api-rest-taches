@@ -182,7 +182,7 @@ class TaskController extends AbstractController
      * @return Response|RedirectResponse
      * 
      */
-    #[Route('/update/task/{id}', name: 'update_task', methods: ['PUT'])]
+    #[Route('/update/task/{id}', name: 'update_task', methods: ['GET','POST'])]
     public function updateTask(Request $request, SessionInterface $session, int $id = 0): Response|RedirectResponse 
     {
         //récupération de la tâche
@@ -205,7 +205,7 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            //$this->entityManager->persist($task);
+            
             $this->entityManager->flush();
             
             //Stocke un booleen qui sert à tester si une modification est faite
