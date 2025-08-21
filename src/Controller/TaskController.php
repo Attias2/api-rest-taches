@@ -180,14 +180,13 @@ class TaskController extends AbstractController
      * Modification de tâche
      * 
      * @param Request Request
-     * @param SessionInterface $session
      * @param id $id
      * 
      * @return JsonResponse|Response
      * 
      */
     #[Route('/update/task/{id}', name: 'update_task', methods: ['PUT','GET'])]
-    public function updateTask(Request $request, SessionInterface $session, int $id = 0): JsonResponse|Response 
+    public function updateTask(Request $request, int $id = 0): JsonResponse|Response 
     {
         //dd($request->getMethod());
 
@@ -202,17 +201,10 @@ class TaskController extends AbstractController
 
         // Vérifie si la requête est AJAX ou JSON
         if (!$request->isXmlHttpRequest()) {
-            // Stockage dees anciennes valeurs dans un tableau avant modification
-            $oldTaskData = [
-                'title' => $task->getTitle(),
-                'status' => $task->getStatus()?->value,
-                'description' => $task->getDescription()
-            ];
 
             $form = $this->createForm(TaskType::class, $task);
+            
             $form->handleRequest($request);
-
-           
 
             return $this->render('task/updateTask.html.twig', [
                 'form' => $form->createView(),
