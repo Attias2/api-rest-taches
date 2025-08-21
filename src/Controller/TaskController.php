@@ -109,6 +109,7 @@ class TaskController extends AbstractController
 
         //message d'erreur à afficher en cas d'erreur
         $message = '';
+
         //booleen qui teste si un champs a mal été saisi
         $error = false;
         $status = $data['status'];
@@ -172,69 +173,131 @@ class TaskController extends AbstractController
         ]);
     }
 
+
+
+
     /** 
-     * modification de tâche
+     * Modification de tâche
      * 
      * @param Request Request
      * @param SessionInterface $session
      * @param id $id
      * 
-     * @return Response|RedirectResponse
+     * @return JsonResponse|Response
      * 
      */
-    #[Route('/update/task/{id}', name: 'update_task', methods: ['GET','POST'])]
-    public function updateTask(Request $request, SessionInterface $session, int $id = 0): Response|RedirectResponse 
+    #[Route('/update/task/{id}', name: 'update_task', methods: ['PUT','GET'])]
+    public function updateTask(Request $request, SessionInterface $session, int $id = 0): JsonResponse|Response 
     {
+        //dd($request->getMethod());
+
         //récupération de la tâche
         $task = $this->entityManager->getRepository(Task::class)->find($id);
 
         //Teste si la tâche existe
         if ($task === null) {
-            $this->addFlash('error', 'Aucune tâche trouvée !');
-            return $this->redirectToRoute('app_task');
+            return new JsonResponse(['message' => 'Aucune tâche trouvée !'], Response::HTTP_NOT_FOUND);
+
         }
 
-        // Stockage dees anciennes valeurs dans un tableau avant modification
-        $oldTaskData = [
-            'title' => $task->getTitle(),
-            'status' => $task->getStatus()?->value,
-            'description' => $task->getDescription()
-        ];
+        // Vérifie si la requête est AJAX ou JSON
+        if (!$request->isXmlHttpRequest()) {
+            // Stockage dees anciennes valeurs dans un tableau avant modification
+            $oldTaskData = [
+                'title' => $task->getTitle(),
+                'status' => $task->getStatus()?->value,
+                'description' => $task->getDescription()
+            ];
 
-        $form = $this->createForm(TaskType::class, $task);
-        $form->handleRequest($request);
+            $form = $this->createForm(TaskType::class, $task);
+            $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+           
+
+            return $this->render('task/updateTask.html.twig', [
+                'form' => $form->createView(),
+                'task' => $task,
+            ]);
+        }
+        else{
+            //Stockage dees anciennes valeurs dans un tableau avant modification
+            $oldTaskData = [
+                'title' => $task->getTitle(),
+                'status' => $task->getStatus()?->value,
+                'description' => $task->getDescription()
+            ];
             
+            $data = json_decode($request->getContent(), true);
+
+            // teste de la présence des champs attendu
+            if (!isset($data['title']) || !isset($data['description']) || !isset($data['status'])) {
+                return new JsonResponse(['message' => 'Les champs title, description et status sont requis !'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            //message d'erreur à afficher en cas d'erreur
+            $message = '';
+
+            //booleen qui teste si un champs a mal été saisi
+            $error = false;
+
+            $status = $data['status'];
+
+            //teste si le status est correct
+            if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
+                $message .= 'Status invalide ! ';
+                $error = true;
+            }
+
+            $title = $data['title'];
+
+            //teste si le titre est saisi
+            if($title === ""){
+                $message .= 'Titre non saisi ';
+                $error = true;
+            }
+
+
+            $description = $data['description'];
+
+            //teste si la description est saisie
+            if($description === ""){
+                $message .= 'description non saisie';
+                $error = true;
+            }
+
+            //renvoi un message en cas de mauvaise saisi
+            if($error){
+                return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+            }
+
+            // conversion de string en enum
+            $task->setStatus(StatusEnum::from($status));
+            $task->setTitle($title);
+            $task->setDescription($description);
+
+            $this->entityManager->persist($task);
             $this->entityManager->flush();
             
-            //Stocke un booleen qui sert à tester si une modification est faite
-            $session->set('isModified', true);
+            
+            // Réponse JSON
+            return new JsonResponse([
+                'message' => "Tâche '{$task->getTitle()}' modifié avec succès !",
+                'oldTaskData' => $oldTaskData,
+                'taskUpdated' => [
+                    'id' => $task->getId(),
+                    'title' => $task->getTitle(),
+                    'description' => $task->getDescription(),
+                    'status' => $task->getStatus(),
+                    'createdAt' => $task->getCreatedAt()->format('Y-m-d H:i:s'),
+                    'updatedAt' => $task->getUpdatedAt()->format('Y-m-d H:i:s'),
+                ]
+            ]);
+            
+            return $response;
 
-            // Stockage aussi des anciennes valeurs en session pour les récupérer après la redirection
-            $session->set('oldTaskData', $oldTaskData);
-
-            return $this->redirectToRoute('update_task', ['id' => $task->getId()]);
         }
 
-        // Récupère du booléen qui teste si il y a eu une modification
-        $isModified = $session->get('isModified', false);
-        if ($isModified) {
-            $session->remove('isModified');
-        }
-
-        // Récupératrion des anciennes valeurs en session, puis supprettion de la clé
-        $oldTaskData = $session->get('oldTaskData', null);
-        if ($oldTaskData) {
-            $session->remove('oldTaskData');
-        }
-
-        return $this->render('task/updateTask.html.twig', [
-            'form' => $form->createView(),
-            'task' => $task,
-            'oldTaskData' => $oldTaskData,
-            'isModified' => $isModified,
-        ]);
+       
     }
 
 
@@ -317,8 +380,10 @@ class TaskController extends AbstractController
         if(!in_array($status, ['en retard', 'en cours', 'terminée'])){
             return new JsonResponse(['message' => 'Status invalide !'], Response::HTTP_BAD_REQUEST);
         }
+
         // conversion de string en enum
         $task->setStatus(StatusEnum::from($status));
+
         $this->entityManager->flush();
 
         $title = $task->getTitle();

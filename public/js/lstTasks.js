@@ -69,8 +69,12 @@ function creatTrLst(dataTasks) {
                 <td>${dataTasks[i+4]}</td>
                 <td>${dataTasks[i+5]}</td>
 
-                <td><button onclick="deleteTask(${id})">Delete</button></td>
-                <td><a href="/update/task/${id}">Update</a></td>
+                <td>
+                    <button onclick="deleteTask(${id})">Delete</button>
+                </td>
+                <td>
+                    <a href="/update/task/${id}">Update</a>
+                </td>
             </tr>`;
     }
 

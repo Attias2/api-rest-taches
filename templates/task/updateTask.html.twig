@@ -5,6 +5,7 @@
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/lien.css') }}">
+    <script type="text/javascript" src="{{ asset('js/updateTask.js') }}"></script>
 {% endblock %}
 
 {% block body %}
@@ -12,7 +13,13 @@
 
 <a href="{{ path('app_task') }}" class="previous">&laquo; Liste des Tâches</a>
 
-<table class="styled-table">
+    {{ form_start(form, {
+            'method': 'PUT',
+            'attr': {'onsubmit': 'event.preventDefault();'}
+        })
+    }}
+
+    <table class="styled-table">
         <caption>Tasks : {{ task.getTitle()}}</caption>
         <thead>
             <tr>
@@ -29,62 +36,41 @@
                 <td>
                     {{ task.getId()}}
                 </td>
-                {{ form_start(form) }}
+                <td>
+                    {{ form_row(form.title) }}
+                </td>
+                <td>
+                    {{ form_row(form.status) }}
+                </td>
+                <td>
+                    {{ form_row(form.description) }}
+                </td>    
+                <td>
+                    {{ task.getCreatedAt().format('d/m/Y  H:i:s') }}
+                </td>
+                <td id='Updated_At'>
+                    {{ task.getUpdatedAt().format('d/m/Y  H:i:s') }}
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-                    <td>
-                        {{ form_row(form.title) }}
-                    </td>
-                    <td>
-                        {{ form_row(form.status) }}
-                    </td>
-                    <td>
-                        {{ form_row(form.description) }}
-                    </td>
-                
-                    <td>{{ task.getCreatedAt().format('d/m/Y  H:i:s') }}</td>
+    <div >
+        {{ 
+            form_row(form.Ajouter, {'label': 'Modifier',
+                'attr': {
+                    'class': 'btn-add',
+                    'onclick': 'updateTask(' ~ task.id ~ ')'
+                }
+            })
+        }}
+    </div>
+    {{ form_end(form) }}
 
-                    <td>{{ task.getUpdatedAt().format('d/m/Y  H:i:s') }}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div >
-            {{ form_row(form.Ajouter, {'label': 'Modifier', 'attr': {'class': 'btn-add'}}) }}
-        </div>
-        {{ form_end(form) }}
-
-
-       {% if oldTaskData is defined and oldTaskData is not null %}
-            <table class="styled-table">
-                <caption>Bilan des modifications</caption>
-                <thead>
-                    <tr>
-                        <th>Version</th>
-                        <th>Titre</th>
-                        <th>Status</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Ancienne version</td>
-                        <td>{{ oldTaskData.title }}</td>
-                        <td>{{ oldTaskData.status }}</td>
-                        <td><p>{{ oldTaskData.description }}</p></td>
-                    </tr>
-                    <tr>
-                        <td>Nouvelle version</td>
-                        <td>{{ task.getTitle() }}</td>
-                        <td>{{ task.getStatus().value }}</td>
-                        <td>
-                            <p>{{ task.getDescription() }}</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        {% endif %}
+    <div id="result"></div>
 
 
 
 
-{% endblock %}
+
+    {% endblock %}
